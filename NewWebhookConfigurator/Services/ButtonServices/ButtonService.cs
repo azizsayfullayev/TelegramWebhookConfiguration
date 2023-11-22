@@ -23,7 +23,7 @@ namespace FastApiWebhook.Services.ButtonServices
             long chatId = message.Chat.Id;
             ReplyKeyboardMarkup replyKeyboardMarkup = new(new[]
             {
-                new KeyboardButton[] { "🇷🇺 Ru ", "🇺🇿 Uz" },
+                new KeyboardButton[] { "🇺🇿 Uz", "🇷🇺 Ru" },
             })
             {
                 ResizeKeyboard = true
@@ -36,13 +36,22 @@ namespace FastApiWebhook.Services.ButtonServices
 
         }
 
-        public async Task MovieSearchIdUz(Message message)
+        public async Task MainMenuUz(Message message = null, CallbackQuery callbackQuery = null)
         {
-            long chatId = message.Chat.Id;
+            long chatId;
+            if (message != null)
+            {
+                 chatId = message.Chat.Id;
+            }
+            else
+            {
+                 chatId = callbackQuery.From.Id;
+            }
+            
 
             ReplyKeyboardMarkup replyKeyboardMarkup = new(new[]
             {
-                new KeyboardButton[] { "Kino nomi bo'yicha qidirish", "Call me ☎️" },
+                new KeyboardButton[] { "ℹ️ Bot haqida ", "☎️ Bog'lanish" },
             })
             {
                 ResizeKeyboard = true
@@ -50,7 +59,7 @@ namespace FastApiWebhook.Services.ButtonServices
 
             Message sentMessage = await botClient.SendTextMessageAsync(
                 chatId: chatId,
-                text: "💃 Kino ID raqamini jo'nating va man kinoni topib beraman :",
+                text: "🔎 Kino 'ID' raqamini yoki nomini jo'nating va man kinoni topib beraman :",
                 replyMarkup: replyKeyboardMarkup);
         }
     }

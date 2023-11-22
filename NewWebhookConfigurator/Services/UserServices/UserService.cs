@@ -1,11 +1,16 @@
-﻿using System.Diagnostics;
+﻿using FastApiWebhook.DbContexts;
+using FastApiWebhook.Services.ButtonServices;
+using MongoDB.Driver;
+using Newtonsoft.Json;
+using System.Diagnostics;
 using Telegram.Bot;
 using Telegram.Bot.Types;
-using FastApiWebhook.DbContexts;
-using FastApiWebhook.Models;
+using Telegram.Bot.Types.ReplyMarkups;
 using FastApiWebhook.Services.ButtonServices;
-using FastApiWebhook.Services.UserServices;
-using MongoDB.Driver;
+using FastApiWebhook.Services.ButtonServices.BotKeyboards;
+using Microsoft.VisualBasic;
+using FastApiWebhook.Models;
+using System.Runtime.InteropServices;
 
 namespace FastApiWebhook.Services.UserServices
 {
@@ -26,6 +31,7 @@ namespace FastApiWebhook.Services.UserServices
             _appDbContext = appDbContext;
             _botClient = botClient;
         }
+
         public async Task EchoUser(Message message)
         {
             // Everthing starts from here
@@ -48,7 +54,7 @@ namespace FastApiWebhook.Services.UserServices
                 {
                     Stopwatch stopwatch = new Stopwatch();
                     stopwatch.Start();
-                    await _buttonService.MovieSearchIdUz(message);
+                    await _buttonService.MainMenuUz(message);
 
                     TimeSpan elapsedTime = stopwatch.Elapsed;
                     await _botClient.SendTextMessageAsync(chatId: message.Chat.Id, elapsedTime.TotalSeconds.ToString());
@@ -57,6 +63,17 @@ namespace FastApiWebhook.Services.UserServices
                 {
 
                 }
+                else if (message.Text.All(char.IsDigit))
+                {
+                    await SearchByIdAndSendMovie(message, long.Parse(message.Text));
+                }
+                else 
+                {
+                    // Finds movie with its name 
+                    await SearchByNameAndSend(message, message.Text);
+                }
+                
+
             }
         }
 
@@ -74,7 +91,7 @@ namespace FastApiWebhook.Services.UserServices
                     var newUser = new FastApiWebhook.Models.User();
                     newUser.ChatId = message.Chat.Id;
                     newUser.UserName = "";
-                    if (message.From != null && message.Chat.Username != "")
+                    if (message.Chat != null && message.Chat.Username != "")
                     {
                         newUser.UserName = message.Chat.Username;
                     }
@@ -87,8 +104,53 @@ namespace FastApiWebhook.Services.UserServices
             }
 
             return;
-
         }
 
+        public async Task SearchByIdAndSendMovie(Message message, long id)
+        {
+            var movie = _appDbContext.Movies.Where(x => x.Id == id).FirstOrDefault();
+            var chatId = message.Chat.Id;
+            if (movie != null)
+            {
+
+                await SendMovie(message, movie);
+            }
+            else
+            {
+                await _botClient.SendTextMessageAsync(chatId, "Bunaqa 'ID' lik kino topilmadi. Boshqa ID jo'nating 🙂");
+            }
+
+        }
+        public async Task SearchByNameAndSend (Message message, string name)
+        {
+            var movie = _appDbContext.Movies.Where(x=>  x.Title.Contains(name.ToLower())).FirstOrDefault();
+            long chatId = message.Chat.Id;
+
+            if (movie != null)
+            {
+               await SendMovie(message, movie);
+            }
+            else
+            {
+                await _botClient.SendTextMessageAsync(chatId, "Bunaqa nomli kino topilmadi. Boshqa nom bilan yoki ID bilan qidirib ko'ring 🙂");
+            }
+
+        }
+        public async Task SendMovie (Message message, Movie movie)
+        {
+            long chatId =  message.Chat.Id;
+            var videoId = movie.VideoId;
+            var caption = movie.Description;
+            var captionEntities = JsonConvert.DeserializeObject<List<MessageEntity>>(movie.DescriptionEntities);
+
+            var inlineKeyboard = InlineKeyboards.GetOrqagaKeyboard();
+
+            await _botClient.SendVideoAsync(chatId: chatId,
+                caption: caption,
+                captionEntities: captionEntities,
+                video: InputFile.FromFileId(videoId),
+                replyMarkup: inlineKeyboard
+                );
+        }
     }
 }

@@ -12,7 +12,7 @@ namespace FastApiWebhook.Models
 
         public string Description { get; set; } = string.Empty;
         public string DescriptionEntities { get; set; } = string.Empty;
-        public DateTime DateTime { get; set; } = GetTime.GetUzbekistanTime();
+        public string DateTime { get; set; } = GetTime.GetUzbekistanTime().ToString();
         public long AdminId { get; set; }
 
 

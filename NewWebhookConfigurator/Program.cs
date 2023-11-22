@@ -3,6 +3,7 @@ using FastApiWebhook.DbContexts;
 using FastApiWebhook.Services;
 using FastApiWebhook.Services.AdminServices;
 using FastApiWebhook.Services.ButtonServices;
+using FastApiWebhook.Services.ButtonServices.BotKeyboards;
 using FastApiWebhook.Services.UserServices;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
@@ -42,6 +43,7 @@ builder.Services.AddHostedService<ConfigureWebhook>();
 builder.Services.AddScoped<IAdminService, AdminService>();
 builder.Services.AddScoped<IButtonService, ButtonService>();
 builder.Services.AddScoped<IUserService, UserService>();
+builder.Services.AddScoped<IInlineQueries, InlineQueries>();
 //Serilog
 builder.Host.UseSerilog((hostingContext, loggerConfiguration) =>
    loggerConfiguration.ReadFrom.Configuration(hostingContext.Configuration));

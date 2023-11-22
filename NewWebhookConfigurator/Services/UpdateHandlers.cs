@@ -1,4 +1,5 @@
 using FastApiWebhook.Services.AdminServices;
+using FastApiWebhook.Services.ButtonServices.BotKeyboards;
 using FastApiWebhook.Services.UserServices;
 using Telegram.Bot;
 using Telegram.Bot.Exceptions;
@@ -15,15 +16,18 @@ public class UpdateHandlers
     private readonly IAdminService _adminService;
     private readonly ITelegramBotClient _botClient;
     private readonly ILogger<UpdateHandlers> _logger;
+    private readonly IInlineQueries _inlineQueries;
 
     public UpdateHandlers(ITelegramBotClient botClient, ILogger<UpdateHandlers> logger,
          IAdminService adminService,
-            IUserService userService)
+            IUserService userService,
+            IInlineQueries inlineQueries)
     {
         _userService = userService;
         _adminService = adminService;
         _botClient = botClient;
         _logger = logger;
+        _inlineQueries = inlineQueries;
     }
     public List<long> Admins { get; } = new List<long>()
         {
@@ -77,7 +81,7 @@ public class UpdateHandlers
         {
             if (userId == admin)
             {
-                await _adminService.UploadMovieData(message, admin);
+                 await _adminService.UploadMovieData(message, admin);
                 return;
             }
         }
@@ -89,17 +93,15 @@ public class UpdateHandlers
     // Process Inline Keyboard callback data
     private async Task BotOnCallbackQueryReceived(CallbackQuery callbackQuery, CancellationToken cancellationToken)
     {
+        await _inlineQueries.EchoInline(callbackQuery);
         _logger.LogInformation("Received inline keyboard callback from: {CallbackQueryId}", callbackQuery.Id);
 
-        await _botClient.AnswerCallbackQueryAsync(
-            callbackQueryId: callbackQuery.Id,
-            text: $"Received {callbackQuery.Data}",
-            cancellationToken: cancellationToken);
+       
 
-        await _botClient.SendTextMessageAsync(
+       /* await _botClient.SendTextMessageAsync(
             chatId: callbackQuery.Message!.Chat.Id,
             text: $"Received {callbackQuery.Data}",
-            cancellationToken: cancellationToken);
+            cancellationToken: cancellationToken);*/
     }
 
     #region Inline Mode
@@ -127,7 +129,7 @@ public class UpdateHandlers
     private async Task BotOnChosenInlineResultReceived(ChosenInlineResult chosenInlineResult, CancellationToken cancellationToken)
     {
         _logger.LogInformation("Received inline result: {ChosenInlineResultId}", chosenInlineResult.ResultId);
-
+        
         await _botClient.SendTextMessageAsync(
             chatId: chosenInlineResult.From.Id,
             text: $"You chose result with Id: {chosenInlineResult.ResultId}",

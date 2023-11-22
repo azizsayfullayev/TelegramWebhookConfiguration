@@ -79,12 +79,12 @@ namespace FastApiWebhook.Services.AdminServices
                     }
 
                     lastRow.VideoId = message.Video.FileId;
-                    lastRow.Description = message.Caption;
+                    lastRow.Description = message.Caption; 
 
-                    var captionEntities = JsonConvert.SerializeObject(message.CaptionEntities);
+                    var captionEntities = JsonConvert.SerializeObject(message.CaptionEntities) ;
                     lastRow.DescriptionEntities = captionEntities;
 
-                    string messageToAdmin = $"Kino malumotlari Muvaffaqiyatli qo'shildi:\n Kino nomi: " + lastRow.Title + "\nKino ID: " + lastRow.Id + "\n\nKeyingi kinoni nomini jo'nating yoki /delete_movie orqali kinoni o'chirib tashang.";
+                    string messageToAdmin = $"Kino malumotlari Muvaffaqiyatli qo'shildi:\nKino nomi: " + lastRow.Title + "\nKino ID: " + lastRow.Id + "\n\nKeyingi kinoni nomini jo'nating yoki /delete_movie orqali kinoni o'chirib tashlang.";
                     await _botClient.SendTextMessageAsync(chatId: adminId, text: messageToAdmin);
 
                     await _appDbContext.SaveChangesAsync();
@@ -113,13 +113,27 @@ namespace FastApiWebhook.Services.AdminServices
         {
 
             var newMovie = new Movie();
-            newMovie.Title = message.Text;
-            newMovie.AdminId = adminId;
+            if (message.Text != null)
+            {
+                if (message.Text.StartsWith("/"))
+                {
+                    await SendMessage(adminId, "Iltimos to'gri kino nomini qo'yib jo'nating!");
+                    return;
 
-            await SendMessage(adminId, "Kino nomi muvaffaqiyatli qo'shildi, endi qolgan malumotlarni jo'nating!\nAgar xatolik ketgan bo'lsa: /delete ni bosing.");
-            await _appDbContext.AddAsync(newMovie);
-            await _appDbContext.SaveChangesAsync();
-            return;
+                }
+                newMovie.Title = message.Text.ToLower();
+                newMovie.AdminId = adminId;
+
+                await SendMessage(adminId, "Kino nomi muvaffaqiyatli qo'shildi, endi qolgan malumotlarni jo'nating!\nAgar xatolik ketgan bo'lsa: /delete ni bosing.");
+                _appDbContext.Add(newMovie);
+                _appDbContext.SaveChanges();
+                return;
+            }
+            else
+            {
+                return;
+            }
+            
         }
     }
 }

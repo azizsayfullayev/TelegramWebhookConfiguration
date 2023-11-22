@@ -5,6 +5,6 @@ namespace FastApiWebhook.Services.ButtonServices
     public interface IButtonService
     {
         Task ChooseLanguageButton(Message message);
-        Task MovieSearchIdUz(Message message);
+        Task MainMenuUz(Message message = null, CallbackQuery callbackQuery = null);
     }
 }

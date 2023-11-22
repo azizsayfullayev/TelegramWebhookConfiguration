@@ -1,5 +1,5 @@
-﻿using Microsoft.EntityFrameworkCore;
-using FastApiWebhook.Models;
+﻿using FastApiWebhook.Models;
+using Microsoft.EntityFrameworkCore;
 
 namespace FastApiWebhook.DbContexts
 {
@@ -16,7 +16,9 @@ namespace FastApiWebhook.DbContexts
         }
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
-
+            modelBuilder.Entity<Movie>()
+                        .Property(b => b.Id)
+                        .HasIdentityOptions(startValue: 1000);
         }
 
     }

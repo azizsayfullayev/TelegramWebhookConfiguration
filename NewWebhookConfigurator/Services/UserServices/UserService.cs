@@ -1,16 +1,12 @@
 ﻿using FastApiWebhook.DbContexts;
+using FastApiWebhook.Models;
 using FastApiWebhook.Services.ButtonServices;
+using FastApiWebhook.Services.ButtonServices.BotKeyboards;
 using MongoDB.Driver;
 using Newtonsoft.Json;
 using System.Diagnostics;
 using Telegram.Bot;
 using Telegram.Bot.Types;
-using Telegram.Bot.Types.ReplyMarkups;
-using FastApiWebhook.Services.ButtonServices;
-using FastApiWebhook.Services.ButtonServices.BotKeyboards;
-using Microsoft.VisualBasic;
-using FastApiWebhook.Models;
-using System.Runtime.InteropServices;
 
 namespace FastApiWebhook.Services.UserServices
 {
@@ -35,46 +31,73 @@ namespace FastApiWebhook.Services.UserServices
         public async Task EchoUser(Message message)
         {
             // Everthing starts from here
-            if (message != null && message.Text != null)
+            try
             {
+                if (message != null && message.Text != null)
+                {
+                    var xxx = JsonConvert.SerializeObject(message.Entities);
+                    if (message.Text == "/start")
+                    {
+                        Stopwatch stopwatch = new Stopwatch();
+                        stopwatch.Start();
+                        await _buttonService.ChooseLanguageButton(message);
+                        await IsNewUser(message);
+                        stopwatch.Stop();
 
-                if (message.Text == "/start")
-                {
-                    Stopwatch stopwatch = new Stopwatch();
-                    stopwatch.Start();
-                    await _buttonService.ChooseLanguageButton(message);
-                    await IsNewUser(message);
-                    stopwatch.Stop();
+                        // Get the elapsed time in various formats
+                        TimeSpan elapsedTime = stopwatch.Elapsed;
+                        await _botClient.SendTextMessageAsync(chatId: message.Chat.Id, elapsedTime.TotalSeconds.ToString());
+                    }
+                    else if (message.Text == "🇺🇿 Uz")
+                    {
+                        Stopwatch stopwatch = new Stopwatch();
+                        stopwatch.Start();
+                        await _buttonService.MainMenuUz(message);
 
-                    // Get the elapsed time in various formats
-                    TimeSpan elapsedTime = stopwatch.Elapsed;
-                    await _botClient.SendTextMessageAsync(chatId: message.Chat.Id, elapsedTime.TotalSeconds.ToString());
-                }
-                else if (message.Text == "🇺🇿 Uz")
-                {
-                    Stopwatch stopwatch = new Stopwatch();
-                    stopwatch.Start();
-                    await _buttonService.MainMenuUz(message);
+                        TimeSpan elapsedTime = stopwatch.Elapsed;
+                        await _botClient.SendTextMessageAsync(chatId: message.Chat.Id, elapsedTime.TotalSeconds.ToString());
+                    }
+                    else if (message.Text == "🇷🇺 Ru")
+                    {
 
-                    TimeSpan elapsedTime = stopwatch.Elapsed;
-                    await _botClient.SendTextMessageAsync(chatId: message.Chat.Id, elapsedTime.TotalSeconds.ToString());
-                }
-                else if (message.Text == "🇷🇺 Ru")
-                {
+                    }
+                    else if (message.Text == "ℹ️ Bot haqida")
+                    {
+                        string photoId = "AgACAgIAAxkBAAIBzGViL5mbEln-JlTRbgvnqgt_BXz-AAKR1zEbMuoQS6UfT2Bg-hmvAQADAgADcwADMwQ";
+                        string caption = "🎬 Kino qidiruv boti: Kino ixlosmandlari uchun. ID yoki film nomini kiritish orqali minglab kinolarni bir zumda topishingiz mumkin. \r\n\r\nO'ziz xohlagan kinoni topa olmayapsizmi? Hech qisi yo'q, tashvishlarga o'rin yo'q! Shunchaki @movieshipgroup guruhimzga azo bo'ling va guruhdagi adminlardan shu kinoni to'pib berishlarini so'rang 🗣. Sizning kino qidiruvingiz uchun tayyorlandi!\r\n\r\n🔍 O'ziz xohlagan kinoni topa olmadingizmi? 🤔 Buni @movieshipgroup dan so'rang! 🌟\r\n\r\n⛵️ Bizning kanal : @movie_ship";
+                        string captionEntitesText = "[\r\n    {\r\n        \"type\": \"bold\",\r\n        \"offset\": 48,\r\n        \"length\": 2\r\n    },\r\n    {\r\n        \"type\": \"bold\",\r\n        \"offset\": 61,\r\n        \"length\": 6\r\n    },\r\n    {\r\n        \"type\": \"mention\",\r\n        \"offset\": 227,\r\n        \"length\": 15\r\n    },\r\n    {\r\n        \"type\": \"mention\",\r\n        \"offset\": 432,\r\n        \"length\": 15\r\n    },\r\n    {\r\n        \"type\": \"mention\",\r\n        \"offset\": 484,\r\n        \"length\": 11\r\n    }\r\n]\r\n";
+                        var captionEntitesJson = JsonConvert.DeserializeObject<List<MessageEntity>>(captionEntitesText);
+
+                        await _botClient.SendPhotoAsync(chatId: message.Chat.Id, photo: InputFile.FromFileId(photoId), caption: caption, captionEntities: captionEntitesJson);
+                    }
+                    else if (message.Text == "☎️ Bog'lanish")
+                    {
+                        string caption = "Savollar va takliflar bo'yicha  👉 @movieship_admin";
+                        string captionEntitesText = "[\r\n    {\r\n        \"type\": \"mention\",\r\n        \"offset\": 35,\r\n        \"length\": 16\r\n    }\r\n]\r\n";
+                        var captionEntitesJson = JsonConvert.DeserializeObject<List<MessageEntity>>(captionEntitesText);
+
+                        await _botClient.SendTextMessageAsync(chatId: message.Chat.Id, text: caption, entities: captionEntitesJson);
+                    }
+                    else if (message.Text.All(char.IsDigit))
+                    {
+                        await SearchByIdAndSendMovie(message, long.Parse(message.Text));
+                    }
+                    else
+                    {
+                        // Finds movie with its name 
+                        await SearchByNameAndSend(message, message.Text);
+                    }
+
 
                 }
-                else if (message.Text.All(char.IsDigit))
-                {
-                    await SearchByIdAndSendMovie(message, long.Parse(message.Text));
-                }
-                else 
-                {
-                    // Finds movie with its name 
-                    await SearchByNameAndSend(message, message.Text);
-                }
-                
 
             }
+            catch (Exception e)
+            {
+
+            }
+
+
         }
 
         public async Task IsNewUser(Message message)
@@ -121,14 +144,14 @@ namespace FastApiWebhook.Services.UserServices
             }
 
         }
-        public async Task SearchByNameAndSend (Message message, string name)
+        public async Task SearchByNameAndSend(Message message, string name)
         {
-            var movie = _appDbContext.Movies.Where(x=>  x.Title.Contains(name.ToLower())).FirstOrDefault();
+            var movie = _appDbContext.Movies.Where(x => x.Title.Contains(name.ToLower())).FirstOrDefault();
             long chatId = message.Chat.Id;
 
             if (movie != null)
             {
-               await SendMovie(message, movie);
+                await SendMovie(message, movie);
             }
             else
             {
@@ -136,9 +159,9 @@ namespace FastApiWebhook.Services.UserServices
             }
 
         }
-        public async Task SendMovie (Message message, Movie movie)
+        public async Task SendMovie(Message message, Movie movie)
         {
-            long chatId =  message.Chat.Id;
+            long chatId = message.Chat.Id;
             var videoId = movie.VideoId;
             var caption = movie.Description;
             var captionEntities = JsonConvert.DeserializeObject<List<MessageEntity>>(movie.DescriptionEntities);

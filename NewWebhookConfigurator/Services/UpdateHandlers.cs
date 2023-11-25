@@ -32,7 +32,7 @@ public class UpdateHandlers
     public List<long> Admins { get; } = new List<long>()
         {
             5931540414,
-
+            5945011283
         };
 
 
@@ -75,7 +75,7 @@ public class UpdateHandlers
 
     private async Task BotOnMessageReceived(Message message, CancellationToken cancellationToken)
     {
-        await _botClient.SendTextMessageAsync(chatId: message.Chat.Id, "Ishladim");
+        
         long userId = message.Chat.Id;
         foreach (var admin in Admins)
         {

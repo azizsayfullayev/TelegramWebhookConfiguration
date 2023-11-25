@@ -1,0 +1,27 @@
+[
+  {
+    "type": "bold",
+    "offset": 48,
+    "length": 2
+  },
+  {
+    "type": "bold",
+    "offset": 61,
+    "length": 6
+  },
+  {
+    "type": "mention",
+    "offset": 227,
+    "length": 15
+  },
+  {
+    "type": "mention",
+    "offset": 432,
+    "length": 15
+  },
+  {
+    "type": "mention",
+    "offset": 484,
+    "length": 11
+  }
+]

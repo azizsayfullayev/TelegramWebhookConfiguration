@@ -67,16 +67,16 @@ namespace FastApiWebhook.Services.UserServices
                         string caption = "🎬 Kino qidiruv boti: Kino ixlosmandlari uchun. ID yoki film nomini kiritish orqali minglab kinolarni bir zumda topishingiz mumkin. \r\n\r\nO'ziz xohlagan kinoni topa olmayapsizmi? Hech qisi yo'q, tashvishlarga o'rin yo'q! Shunchaki @movieshipgroup guruhimzga azo bo'ling va guruhdagi adminlardan shu kinoni to'pib berishlarini so'rang 🗣. Sizning kino qidiruvingiz uchun tayyorlandi!\r\n\r\n🔍 O'ziz xohlagan kinoni topa olmadingizmi? 🤔 Buni @movieshipgroup dan so'rang! 🌟\r\n\r\n⛵️ Bizning kanal : @movie_ship";
                         string captionEntitesText = "[\r\n    {\r\n        \"type\": \"bold\",\r\n        \"offset\": 48,\r\n        \"length\": 2\r\n    },\r\n    {\r\n        \"type\": \"bold\",\r\n        \"offset\": 61,\r\n        \"length\": 6\r\n    },\r\n    {\r\n        \"type\": \"mention\",\r\n        \"offset\": 227,\r\n        \"length\": 15\r\n    },\r\n    {\r\n        \"type\": \"mention\",\r\n        \"offset\": 432,\r\n        \"length\": 15\r\n    },\r\n    {\r\n        \"type\": \"mention\",\r\n        \"offset\": 484,\r\n        \"length\": 11\r\n    }\r\n]\r\n";
                         var captionEntitesJson = JsonConvert.DeserializeObject<List<MessageEntity>>(captionEntitesText);
-
-                        await _botClient.SendPhotoAsync(chatId: message.Chat.Id, photo: InputFile.FromFileId(photoId), caption: caption, captionEntities: captionEntitesJson);
+                        var inlineKeyboard = InlineKeyboards.GetOrqagaKeyboard();
+                        await _botClient.SendPhotoAsync(chatId: message.Chat.Id, photo: InputFile.FromFileId(photoId), caption: caption, captionEntities: captionEntitesJson,replyMarkup: inlineKeyboard);
                     }
                     else if (message.Text == "☎️ Bog'lanish")
                     {
                         string caption = "Savollar va takliflar bo'yicha  👉 @movieship_admin";
                         string captionEntitesText = "[\r\n    {\r\n        \"type\": \"mention\",\r\n        \"offset\": 35,\r\n        \"length\": 16\r\n    }\r\n]\r\n";
                         var captionEntitesJson = JsonConvert.DeserializeObject<List<MessageEntity>>(captionEntitesText);
-
-                        await _botClient.SendTextMessageAsync(chatId: message.Chat.Id, text: caption, entities: captionEntitesJson);
+                        var inlineKeyboard = InlineKeyboards.GetOrqagaKeyboard();
+                        await _botClient.SendTextMessageAsync(chatId: message.Chat.Id, text: caption, entities: captionEntitesJson, replyMarkup:inlineKeyboard);
                     }
                     else if (message.Text.All(char.IsDigit))
                     {
